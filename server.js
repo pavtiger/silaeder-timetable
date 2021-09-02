@@ -111,7 +111,7 @@ function main(req, res) {
 }
 
 parseTable();
-setTimeout(parseTable, 300000);
+setInterval(parseTable, 300000);
 
 var app = http.createServer(main);
 app.listen(8080);
