@@ -36,17 +36,27 @@ async function parseTable() {
 
     let _table = [], _width = [];  // variables to work with until the result is ready
 
-    for (let i = 0; i < 50; ++i) {
+    for (let i = 0; i < 67; ++i) {
         let line = {}, width_line = [], last_subject_elem = -1;
         for (let j = 0; j < 16; ++j) {
             const elem = await sheet.getCell(1 + i, 2 + j);
+
             if (elem._rawData["userEnteredValue"] === undefined) {
-                line[j.toString()] = "None";
-                if (last_subject_elem !== -1) {
-                    width_line[last_subject_elem]++;  // add 1 to last not None element
+                if (Object.keys(elem._rawData).length !== 0) {
+                    // empty cell
+                    line[j.toString()] = "";
+                    width_line.push(1);
+                    last_subject_elem = j;
+                } else {
+                    // end value
+                    line[j.toString()] = "None";
+                    if (last_subject_elem !== -1) {
+                        width_line[last_subject_elem]++;  // add 1 to last not None element
+                    }
+                    width_line.push(0);  // current cell width
                 }
-                width_line.push(0);  // current cell width
             } else {
+                // start value
                 line[j.toString()] = elem._rawData["userEnteredValue"]["stringValue"];
                 width_line.push(1);
                 last_subject_elem = j;
