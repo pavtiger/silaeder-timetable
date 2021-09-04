@@ -15,7 +15,7 @@ client_email = api_info["client_email"]
 private_key = api_info["private_key"]
 
 
-let table = [], width = [];  // Parsed table, and width of a cell in table
+let table = [], width = [], color = [];  // Parsed table, and width of a cell in table
 
 
 async function parseTable() {
@@ -34,16 +34,25 @@ async function parseTable() {
 
     await sheet.loadCells('A1:R68');
 
-    let _table = [], _width = [];  // variables to work with until the result is ready
+    let _table = [], _width = [], _color = [];  // variables to work with until the result is ready
 
     for (let i = 0; i < 67; ++i) {
         let line = {}, width_line = [], last_subject_elem = -1;
+        _color[i] = [];
+
         for (let j = 0; j < 16; ++j) {
             const elem = await sheet.getCell(1 + i, 2 + j);
 
             if (elem._rawData["userEnteredValue"] === undefined) {
                 if (Object.keys(elem._rawData).length !== 0) {
                     // empty cell
+                    if (elem._rawData["effectiveFormat"] !== undefined) {
+                        _color[i][j] = elem._rawData["effectiveFormat"]["backgroundColor"];
+                        if (_color[i][j]["red"] === undefined) _color[i][j]["red"] = 0;
+                        if (_color[i][j]["green"] === undefined) _color[i][j]["green"] = 0;
+                        if (_color[i][j]["blue"] === undefined) _color[i][j]["blue"] = 0;
+                    }
+
                     line[j.toString()] = "";
                     width_line.push(1);
                     last_subject_elem = j;
@@ -57,6 +66,11 @@ async function parseTable() {
                 }
             } else {
                 // start value
+                _color[i][j] = elem._rawData["effectiveFormat"]["backgroundColor"];
+                if (_color[i][j]["red"] === undefined) _color[i][j]["red"] = 0;
+                if (_color[i][j]["green"] === undefined) _color[i][j]["green"] = 0;
+                if (_color[i][j]["blue"] === undefined) _color[i][j]["blue"] = 0;
+
                 line[j.toString()] = elem._rawData["userEnteredValue"]["stringValue"];
                 width_line.push(1);
                 last_subject_elem = j;
@@ -68,13 +82,14 @@ async function parseTable() {
 
     width = _width;
     table = _table;
+    color = _color;
     console.log("updated...");
 }
 
 
 function getTable(req, res) {
     res.writeHead(200, {"Content-Type": "text/json"});
-    res.end(JSON.stringify([table, width]));
+    res.end(JSON.stringify([table, width, color]));
 }
 
 function index(req, res) {
