@@ -51,6 +51,8 @@ async function parseTable() {
                         if (_color[i][j]["red"] === undefined) _color[i][j]["red"] = 0;
                         if (_color[i][j]["green"] === undefined) _color[i][j]["green"] = 0;
                         if (_color[i][j]["blue"] === undefined) _color[i][j]["blue"] = 0;
+                    } else {
+                        _color[i][j] = {"red": 1, "green": 1, "blue": 1};
                     }
 
                     line[j.toString()] = "";
