@@ -105,3 +105,8 @@ dist
 
 # Custom
 pavtiger.json
+.idea/
+C:UsersUsernodejsnpm-cache/
+package.json
+package-lock.json
+
