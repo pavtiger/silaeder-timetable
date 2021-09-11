@@ -19,7 +19,6 @@ let table = [], width = [], color = [];  // Parsed table, and width of a cell in
 
 
 async function parseTable() {
-    console.log("parsing...");
 
     // Initialize the sheet - doc ID is the long id in the sheets URL
     const doc = new GoogleSpreadsheet('1WNI4amVqK9AJzuNAQHHMdZpE6pMAxNAR7tab7cTMvb4');
@@ -34,25 +33,27 @@ async function parseTable() {
 
     await sheet.loadCells('A1:R68');
 
-    let _table = [], _width = [], _color = [];  // variables to work with until the result is ready
+    let _table = [], _width = [], _color = [], lasti = 0;  // variables to work with until the result is ready
+    let _table_day = [], _width_day = [], _color_day = [];  // table for a whole day
 
-    for (let i = 0; i < 67; ++i) {
-        let line = {}, width_line = [], last_subject_elem = -1;
-        _color[i] = [];
+    for (let i = 0; i < 67; ++i) {  // table row
+        let line = {}, width_line = [], last_subject_elem = -1, day_i = i - lasti;
+        let subject_index = await sheet.getCell(1 + i, 1)._rawData.formattedValue;
+        let color_line = [];
 
-        for (let j = 0; j < 16; ++j) {
+        for (let j = 0; j < 16; ++j) {  // table column
             const elem = await sheet.getCell(1 + i, 2 + j);
 
             if (elem._rawData["userEnteredValue"] === undefined) {
                 if (Object.keys(elem._rawData).length !== 0) {
                     // empty cell
                     if (elem._rawData["effectiveFormat"] !== undefined) {
-                        _color[i][j] = elem._rawData["effectiveFormat"]["backgroundColor"];
-                        if (_color[i][j]["red"] === undefined) _color[i][j]["red"] = 0;
-                        if (_color[i][j]["green"] === undefined) _color[i][j]["green"] = 0;
-                        if (_color[i][j]["blue"] === undefined) _color[i][j]["blue"] = 0;
+                        color_line[j] = elem._rawData["effectiveFormat"]["backgroundColor"];
+                        if (color_line[j]["red"] === undefined) color_line[j]["red"] = 0;
+                        if (color_line[j]["green"] === undefined) color_line[j]["green"] = 0;
+                        if (color_line[j]["blue"] === undefined) color_line[j]["blue"] = 0;
                     } else {
-                        _color[i][j] = {"red": 1, "green": 1, "blue": 1};
+                        color_line[j] = {"red": 1, "green": 1, "blue": 1};
                     }
 
                     line[j.toString()] = "";
@@ -68,24 +69,35 @@ async function parseTable() {
                 }
             } else {
                 // start value
-                _color[i][j] = elem._rawData["effectiveFormat"]["backgroundColor"];
-                if (_color[i][j]["red"] === undefined) _color[i][j]["red"] = 0;
-                if (_color[i][j]["green"] === undefined) _color[i][j]["green"] = 0;
-                if (_color[i][j]["blue"] === undefined) _color[i][j]["blue"] = 0;
+                if (elem._rawData["effectiveFormat"] !== undefined) {
+                    color_line[j] = elem._rawData["effectiveFormat"]["backgroundColor"];
+                    if (color_line[j]["red"] === undefined) color_line[j]["red"] = 0;
+                    if (color_line[j]["green"] === undefined) color_line[j]["green"] = 0;
+                    if (color_line[j]["blue"] === undefined) color_line[j]["blue"] = 0;
+                } else {
+                    color_line[j] = {"red": 1, "green": 1, "blue": 1};
+                }
 
                 line[j.toString()] = elem._rawData["userEnteredValue"]["stringValue"];
                 width_line.push(1);
                 last_subject_elem = j;
             }
         }
-        _table.push(line);
-        _width.push(width_line);
+
+        if (i !== 0 && subject_index === "1") {
+            _table.push(_table_day); _width.push(_width_day); _color.push(_color_day);
+            _table_day = []; _width_day = []; _color_day = []; lasti = i;
+        }
+        _table_day.push(line);
+        _width_day.push(width_line);
+        _color_day.push(color_line)
     }
+
+    _table.push(_table_day); _width.push(_width_day); _color.push(_color_day);
 
     width = _width;
     table = _table;
     color = _color;
-    console.log("updated...");
 }
 
 
