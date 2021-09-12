@@ -31,7 +31,7 @@ async function parseTable() {
     await doc.loadInfo(); // loads document properties and worksheets
     const sheet = doc.sheetsByTitle["Расписание (создается....)"];
 
-    await sheet.loadCells('A1:R68');
+    await sheet.loadCells('A1:S68');
 
     let _table = [], _width = [], _color = [], lasti = 0;  // variables to work with until the result is ready
     let _table_day = [], _width_day = [], _color_day = [];  // table for a whole day
@@ -42,7 +42,7 @@ async function parseTable() {
         let color_line = [];
 
         for (let j = 0; j < 16; ++j) {  // table column
-            const elem = await sheet.getCell(1 + i, 2 + j);
+            const elem = await sheet.getCell(1 + i, 3 + j);
 
             if (elem._rawData["userEnteredValue"] === undefined) {
                 if (Object.keys(elem._rawData).length !== 0) {
